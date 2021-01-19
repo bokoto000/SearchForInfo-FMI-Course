@@ -21,7 +21,7 @@ def trainModel(trainCorpus, lm, optimizer, epochs, batchSize):
             batch = [ trainCorpus[i] for i in idx[b:min(b+batchSize, len(idx))] ]
             H = lm(batch)
             optimizer.zero_grad()
-            #H.backward()
+            H.backward()
             optimizer.step()
             print("Epoch:",epoch,'/',epochs,", Batch:",b // batchSize, '/', len(idx) // batchSize, ", loss: ",H.item())
 
