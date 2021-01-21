@@ -36,11 +36,11 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         weight = next(model.parameters()).data
         
         if (train_on_gpu):
-            hidden = (weight.new(model.lstm_layers*2, batch_size, model.hidden_size).zero_().cuda(),
-                  weight.new(model.lstm_layers*2, batch_size, model.hidden_size).zero_().cuda())
+            hidden = (weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_().cuda(),
+                  weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_().cuda())
         else:
-            hidden = (weight.new(model.lstm_layers*2, batch_size, model.hidden_size).zero_(),
-                      weight.new(model.lstm_layers*2, batch_size, model.hidden_size).zero_())
+            hidden = (weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_(),
+                      weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_())
         #print(hidden)
         return hidden
     
@@ -68,9 +68,8 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         
         # tensor inputs
         x = np.array([[char2id[char]]])
-        print(x)
-        x = one_hot_encode(x, 128)
-        print(x)
+        #print(x)
+        x = one_hot_encode(x, 32)
         inputs = torch.from_numpy(x)
         #print(len(inputs[0][0]))
         if(train_on_gpu):
@@ -92,8 +91,8 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         else:
             p, top_ch = p.topk(top_k)
             top_ch = top_ch.numpy().squeeze()
-        print(top_ch)
         # select the likely next character with some element of randomness
+        print(p)
         p = p.numpy().squeeze()
         #print(top_ch, p)
         char = np.random.choice(top_ch, p=p/p.sum())
