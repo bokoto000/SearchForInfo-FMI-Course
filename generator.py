@@ -48,7 +48,7 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
     def one_hot_encode(arr, n_labels):
         
         # Initialize the the encoded array
-        print(arr.size)
+        #print(arr.size)
         one_hot = np.zeros((arr.size, n_labels), dtype=np.float32)
         
         # Fill the appropriate elements with ones
@@ -69,7 +69,8 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         # tensor inputs
         x = np.array([[char2id[char]]])
         print(x)
-        x = one_hot_encode(x, len(char2id))
+        x = one_hot_encode(x, 128)
+        print(x)
         inputs = torch.from_numpy(x)
         #print(len(inputs[0][0]))
         if(train_on_gpu):
