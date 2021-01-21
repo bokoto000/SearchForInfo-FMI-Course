@@ -4,7 +4,7 @@ from torch import nn
 import torch.nn.functional as F
 
 # open text file and read in data as `text`
-with open('/data/poems_data.txt', 'r') as f:
+with open('poems_data.txt', 'r', encoding="utf8") as f:
     text = f.read()
 
 text[:100]
