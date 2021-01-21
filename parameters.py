@@ -9,7 +9,7 @@ char2idFileName = 'char2id'
 device = torch.device("cuda:0")
 #device = torch.device("cpu")
 
-batchSize = 32
+batchSize = 64
 char_emb_size = 116
 
 hid_size = 128

@@ -36,8 +36,8 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         weight = next(model.parameters()).data
         
         if (train_on_gpu):
-            hidden = (weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_().cuda(),
-                  weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_().cuda())
+            hidden = (weight.new(2, batch_size, model.hidden_size).zero_().cuda(),
+                  weight.new(2, batch_size, model.hidden_size).zero_().cuda())
         else:
             hidden = (weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_(),
                       weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_())
@@ -69,7 +69,8 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         # tensor inputs
         x = np.array([[char2id[char]]])
         #print(x)
-        x = one_hot_encode(x, 32)
+        x = one_hot_encode(x, len(char2id))
+        print(x)
         inputs = torch.from_numpy(x)
         #print(len(inputs[0][0]))
         if(train_on_gpu):
@@ -110,15 +111,20 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
     model.eval()
 
     # First off, run through the prime characters
+    # First off, run through the prime characters
     chars = [ch for ch in startSentence]
     h = init_hidden(model, 1)
-    print(len(h))
-    for x in range(0,limit):
-        for ch in startSentence:
-            char, h = predict(net = model, char = ch, h = h, top_k=116)
-        chars.append(char)
-    return ''.join(chars)
+    for ch in startSentence:
+        char, h = predict(model, ch, h, top_k=116)
+    chars.append(char)
     
+    # Now pass in the previous character and get a new one
+    for ii in range(1000):
+        char, h = predict(model, chars[-1], h, top_k=116)
+        chars.append(char)
+        print (char)
+    return ''.join(chars)
+
     #### Край на Вашия код
     #############################################################################
     return chars
