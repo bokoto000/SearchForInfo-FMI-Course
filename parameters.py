@@ -6,11 +6,11 @@ trainDataFileName = 'trainData'
 testDataFileName = 'testData'
 char2idFileName = 'char2id'
 
-#device = torch.device("cuda:0")
-device = torch.device("cpu")
+device = torch.device("cuda:0")
+#device = torch.device("cpu")
 
 batchSize = 32
-char_emb_size = 116
+char_emb_size = 32
 
 hid_size = 128
 lstm_layers = 2

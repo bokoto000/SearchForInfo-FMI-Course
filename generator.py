@@ -92,7 +92,7 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         else:
             p, top_ch = p.topk(top_k)
             top_ch = top_ch.numpy().squeeze()
-        
+        print(top_ch)
         # select the likely next character with some element of randomness
         p = p.numpy().squeeze()
         #print(top_ch, p)
