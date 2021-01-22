@@ -228,29 +228,31 @@ def train(net, data, epochs=10, batch_size=10, seq_length=50, lr=0.001, clip=5, 
 # define and print the net
 n_hidden = 512
 n_layers = 2
-net = CharRNN(chars, n_hidden, n_layers)
-print(net)
+#net = CharRNN(chars, n_hidden, n_layers)
+#print(net)
 batch_size = 128
 seq_length = 100
 n_epochs =  10# start small if you are just testing initial behavior
 # train the model
 
     # create training and validation data
-#val_idx = int(len(encoded)*(1-0.1))
-#data, val_data = encoded[:val_idx], encoded[val_idx:]
+val_idx = int(len(encoded)*(1-0.1))
+data, val_data = encoded[:val_idx], encoded[val_idx:]
 #print (len(get_batches(data,
 #  batch_size,
 #  seq_length)))
 #train(net, encoded, epochs=n_epochs, batch_size=batch_size, seq_length=seq_length, lr=0.001, print_every=10)
 
 # change the name, for saving multiple files
-model_name = 'poem_4_epoch.net'
-checkpoint = {'n_hidden': net.n_hidden,
-              'n_layers': net.n_layers,
-              'state_dict': net.state_dict(),
-              'tokens': net.chars}
-with open(model_name, 'wb') as f:
-    torch.save(checkpoint, f)
+#model_name = 'poem_4_epoch.net'
+#checkpoint = {'n_hidden': net.n_hidden,
+#              'n_layers': net.n_layers,
+#              'state_dict': net.state_dict(),
+#              'tokens': net.chars}
+#with open(model_name, 'wb') as f:
+#    torch.save(checkpoint, f)
+net = CharRNN(chars, n_hidden, n_layers)
+net.load_state_dict(torch.load("poem_4_epoch.net"),strict=False)
 
 def predict(net, char, h=None, top_k=None):
         ''' Given a character, predict the next character.
@@ -309,5 +311,6 @@ def sample(net, size, prime='The', top_k=None):
         char, h = predict(net, chars[-1], h, top_k=top_k)
         chars.append(char)
     return ''.join(chars)
+
 
 print(sample(net, 500, prime='christmas', top_k=2))
