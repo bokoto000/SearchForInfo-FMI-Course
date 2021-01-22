@@ -235,6 +235,13 @@ batch_size = 128
 seq_length = 100
 n_epochs =  10# start small if you are just testing initial behavior
 # train the model
+
+    # create training and validation data
+val_idx = int(len(encoded)*(1-0.1))
+data, val_data = encoded[:val_idx], encoded[val_idx:]
+print (len(get_batches(data,
+  batch_size,
+  seq_length)))
 train(net, encoded, epochs=n_epochs, batch_size=batch_size, seq_length=seq_length, lr=0.001, print_every=10)
 
 # change the name, for saving multiple files
