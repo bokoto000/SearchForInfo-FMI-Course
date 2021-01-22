@@ -70,7 +70,7 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         x = np.array([[char2id[char]]])
         #print(x)
         x = one_hot_encode(x, len(char2id))
-        print(x)
+        #print(x)
         inputs = torch.from_numpy(x)
         #print(len(inputs[0][0]))
         if(train_on_gpu):
@@ -82,21 +82,28 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         # get the output of the model
         out, h = net.lstm(inputs, h)
         # get the character probabilities
-        p = torch.nn.functional.softmax(out, dim=1).data
+        #print(out[0][0][0].item())
+        #print(len(out[0][0]))
+        p = out.data #torch.nn.functional.softmax(out, dim=1).data
         if(train_on_gpu):
             p = p.cpu() # move to cpu
         
+        print(p.topk(512))
         # get top characters
-        if top_k is None:
-            top_ch = np.arange(len(char2id))
-        else:
-            p, top_ch = p.topk(top_k)
-            top_ch = top_ch.numpy().squeeze()
+        pe = p.topk(512)
+        p, top_ch = p.topk(512)
+        top_ch = top_ch.numpy().squeeze()
+        print(p.topk(512))
+        top_ch1 = [x for x in top_ch if x <=115]
+        print(top_ch1)
+        for x in top_ch1:
+            print(int2char[x])
+        print(int2char[33],int2char[108],int2char[43],int2char[11],int2char[60])
         # select the likely next character with some element of randomness
-        print(p)
-        p = p.numpy().squeeze()
+        #print(p[0][0][0].item())
+        p = p.numpy().squeeze()#numpy()#.squeeze()
         #print(top_ch, p)
-        char = np.random.choice(top_ch, p=p/p.sum())
+        char = np.random.choice(top_ch1)
         # return the encoded value of the predicted char and the hidden state
         #print(char)
         return int2char[char], h
@@ -115,12 +122,12 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
     chars = [ch for ch in startSentence]
     h = init_hidden(model, 1)
     for ch in startSentence:
-        char, h = predict(model, ch, h, top_k=116)
+        char, h = predict(model, ch, h, top_k=32)
     chars.append(char)
     
     # Now pass in the previous character and get a new one
     for ii in range(1000):
-        char, h = predict(model, chars[-1], h, top_k=116)
+        char, h = predict(model, chars[-1], h,top_k=32)
         chars.append(char)
         print (char)
     return ''.join(chars)

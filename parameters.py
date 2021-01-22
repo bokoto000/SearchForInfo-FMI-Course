@@ -9,14 +9,14 @@ char2idFileName = 'char2id'
 device = torch.device("cuda:0")
 #device = torch.device("cpu")
 
-batchSize = 32
+batchSize = 64
 char_emb_size = 116
 
-hid_size = 1024
+hid_size = 512
 lstm_layers = 2
-dropout = 0.8
+dropout = 0.5
 
 epochs = 10
-learning_rate = 0.005
+learning_rate = 0.001
 
 defaultTemperature = 0.4
