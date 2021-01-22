@@ -236,12 +236,12 @@ n_epochs =  10# start small if you are just testing initial behavior
 # train the model
 
     # create training and validation data
-val_idx = int(len(encoded)*(1-0.1))
-data, val_data = encoded[:val_idx], encoded[val_idx:]
-print (len(get_batches(data,
-  batch_size,
-  seq_length)))
-train(net, encoded, epochs=n_epochs, batch_size=batch_size, seq_length=seq_length, lr=0.001, print_every=10)
+#val_idx = int(len(encoded)*(1-0.1))
+#data, val_data = encoded[:val_idx], encoded[val_idx:]
+#print (len(get_batches(data,
+#  batch_size,
+#  seq_length)))
+#train(net, encoded, epochs=n_epochs, batch_size=batch_size, seq_length=seq_length, lr=0.001, print_every=10)
 
 # change the name, for saving multiple files
 model_name = 'poem_4_epoch.net'
@@ -271,6 +271,7 @@ def predict(net, char, h=None, top_k=None):
         out, h = net(inputs, h)
         # get the character probabilities
         p = F.softmax(out, dim=1).data
+        print(p)
         if(train_on_gpu):
             p = p.cpu() # move to cpu
         
