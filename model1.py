@@ -43,6 +43,7 @@ class LSTMLanguageModelPack(torch.nn.Module):
         self.hidden_size = hidden_size
         self.lstm_layers = lstm_layers
         self.embed_size = embed_size
+        print(embed_size)
         self.lstm = torch.nn.LSTM(embed_size, hidden_size, lstm_layers,  bidirectional=True,dropout=dropout)
         self.embed = torch.nn.Embedding(len(word2ind), embed_size)
         self.projection = torch.nn.Linear(2*hidden_size,len(word2ind))

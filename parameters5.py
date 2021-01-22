@@ -12,7 +12,7 @@ device = torch.device("cuda:0")
 batchSize = 64
 char_emb_size = 116
 
-hid_size = 512
+hid_size = 116
 lstm_layers = 2
 dropout = 0.5
 

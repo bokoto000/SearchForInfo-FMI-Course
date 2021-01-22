@@ -72,6 +72,7 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         x = one_hot_encode(x, len(char2id))
         #print(x)
         inputs = torch.from_numpy(x)
+        print("inputs",inputs)
         #print(len(inputs[0][0]))
         if(train_on_gpu):
             inputs = inputs.cuda()
@@ -84,10 +85,10 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         # get the character probabilities
         #print(out[0][0][0].item())
         #print(len(out[0][0]))
-        p = torch.nn.functional.softmax(out, dim=0).data
+        p = torch.nn.functional.softmax(out, dim=2).data
         if(train_on_gpu):
             p = p.cpu() # move to cpu
-        
+        print(p)
         print(p.topk(512))
         # get top characters
         pe = p.topk(512)

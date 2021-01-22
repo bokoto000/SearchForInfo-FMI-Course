@@ -272,8 +272,8 @@ def predict(net, char, h=None, top_k=None):
         # get the output of the model
         out, h = net(inputs, h)
         # get the character probabilities
+        print(out)
         p = F.softmax(out, dim=1).data
-        print(p)
         if(train_on_gpu):
             p = p.cpu() # move to cpu
         
@@ -298,14 +298,13 @@ def sample(net, size, prime='The', top_k=None):
         net.cpu()
     
     net.eval() # eval mode
-    
+    print (int2char)
     # First off, run through the prime characters
     chars = [ch for ch in prime]
     h = net.init_hidden(1)
     for ch in prime:
         char, h = predict(net, ch, h, top_k=top_k)
     chars.append(char)
-    
     # Now pass in the previous character and get a new one
     for ii in range(size):
         char, h = predict(net, chars[-1], h, top_k=top_k)
