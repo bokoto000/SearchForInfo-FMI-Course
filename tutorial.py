@@ -7,7 +7,6 @@ import torch.nn.functional as F
 with open('poems_data.txt', 'r', encoding="utf8") as f:
     text = f.read()
 
-text[:100]
 
 # encode the text and map each character to an integer and vice versa
 # we create two dictionaries:
