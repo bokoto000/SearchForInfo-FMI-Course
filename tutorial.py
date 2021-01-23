@@ -85,7 +85,7 @@ class CharRNN(nn.Module):
         self.n_layers = n_layers
         self.n_hidden = n_hidden
         self.lr = lr
-        
+        print(len(chars))
         # creating character dictionaries
         self.chars = tokens
         self.int2char = dict(enumerate(self.chars))
@@ -263,16 +263,19 @@ def predict(net, char, h=None, top_k=None):
         x = np.array([[net.char2int[char]]])
         x = one_hot_encode(x, len(net.chars))
         inputs = torch.from_numpy(x)
-        
+        print(len(inputs))
         if(train_on_gpu):
             inputs = inputs.cuda()
         
         # detach hidden state from history
         h = tuple([each.data for each in h])
+        
+       
+        print(h[0].size())
         # get the output of the model
         out, h = net(inputs, h)
         # get the character probabilities
-        print(out)
+        print(out.size())
         p = F.softmax(out, dim=1).data
         if(train_on_gpu):
             p = p.cpu() # move to cpu
@@ -302,6 +305,9 @@ def sample(net, size, prime='The', top_k=None):
     # First off, run through the prime characters
     chars = [ch for ch in prime]
     h = net.init_hidden(1)
+    print(len(h[0][0][0]))
+    print(h[0])
+    print(h[0][0])
     for ch in prime:
         char, h = predict(net, ch, h, top_k=top_k)
     chars.append(char)

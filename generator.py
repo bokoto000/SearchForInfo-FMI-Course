@@ -17,116 +17,67 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
     # startSentence е началния низ стартиращ със символа за начало '{'
     # limit е горна граница за дължината на поемата
     # temperature е температурата за промяна на разпределението за следващ символ
+    
+    int2char = dict(enumerate(char2id))
+    def char_tensor (model, string):
+        tensor = torch.zeros(len(string)).long()
+        for c in range (len(string)):
+            tensor[c] = char2id[string[c]]
+            return tensor
+
+    def predict(model, source):
+        
+        length = len(source)-1
+        X = model.preparePaddedBatch(source)
+        #print(X)
+        E = model.embed(X)
+        source_lengths = [len(s) for s in source]
+        #print(E)
+        #print(source_lengths)
+        outputPacked, _ = model.lstm(torch.nn.utils.rnn.pack_padded_sequence(E, source_lengths,enforce_sorted=False))
+        output,_ = torch.nn.utils.rnn.pad_packed_sequence(outputPacked)
+
+        Z = model.projection(output.flatten(0,1))
+        #print(Z)
+        Z = torch.div(Z,0.4)
+        #print(Z)
+        p = torch.nn.functional.softmax(Z, dim=1).data
+        #print(p)
+        p, top_ch = p.topk(116)
+        top_ch = top_ch.numpy().squeeze()
+        #print(top_ch)        
+        #print(len(p[0]))
+        p = p[length]
+        #print(p)
+        #print(top_ch)
+        #print(len(p))
+        p = p.numpy().squeeze()
+        #print(len(p))
+        #print(top_ch[length], p)
+        char = np.random.choice(top_ch[length], p=p/p.sum())
+        #print(char, int2char[char])
+       # Y_bar = X.flatten(0,1)
+        #print(Z.size(), Z)
+       #Y_bar[Y_bar==model.endTokenIdx] = model.padTokenIdx
+        #H = torch.nn.functional.cross_entropy(Z,Y_bar,ignore_index=model.padTokenIdx)
+        return int2char[char]
+    #print(char2id)
+    result = startSentence
+    chars  = [x for x in startSentence]
+    model.eval() # eval mode
+    for x in range(0,20):
+        out = predict(model, chars[-2:])
+        chars.append(out)
+    print("".join(chars))
+    
     #############################################################################
     ###  Тук следва да се имплементира генерацията на текста
     #############################################################################
     #### Начало на Вашия код.
-    int2char = dict(enumerate(char2id))
-    train_on_gpu = torch.cuda.is_available()
-    if(train_on_gpu):
-        print('Training on GPU!')
-    else: 
-        print('No GPU available, training on CPU; consider making n_epochs very small.')
 
-
-    def init_hidden(model, batch_size):
-        ''' Initializes hidden state '''
-        # Create two new tensors with sizes n_layers x batch_size x n_hidden,
-        # initialized to zero, for hidden state and cell state of LSTM
-        weight = next(model.parameters()).data
-        
-        if (train_on_gpu):
-            hidden = (weight.new(2, batch_size, model.hidden_size).zero_().cuda(),
-                  weight.new(2, batch_size, model.hidden_size).zero_().cuda())
-        else:
-            hidden = (weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_(),
-                      weight.new(model.lstm_layers, batch_size, model.hidden_size).zero_())
-        #print(hidden)
-        return hidden
+    pass
     
-    
-    def one_hot_encode(arr, n_labels):
-        
-        # Initialize the the encoded array
-        #print(arr.size)
-        one_hot = np.zeros((arr.size, n_labels), dtype=np.float32)
-        
-        # Fill the appropriate elements with ones
-        #print("one_hot", one_hot)
-        one_hot[np.arange(one_hot.shape[0]), arr.flatten()] = 1.
-        
-        # Finally reshape it to get back to the original array
-        one_hot = one_hot.reshape((*arr.shape, n_labels))
-        
-        return one_hot
-
-
-    def predict(net, char, h=None, top_k=None):
-        ''' Given a character, predict the next character.
-            Returns the predicted character and the hidden state.
-        '''
-        
-        # tensor inputs
-        x = np.array([[char2id[char]]])
-        #print(x)
-        x = one_hot_encode(x, len(char2id))
-        #print(x)
-        inputs = torch.from_numpy(x)
-        print("inputs",inputs)
-        #print(len(inputs[0][0]))
-        if(train_on_gpu):
-            inputs = inputs.cuda()
-        # detach hidden state from history
-        #(net.embed_size,net.hidden_size, net.lstm_layers)
-        h = tuple([each.data for each in h])
-        #print(len(h))
-        # get the output of the model
-        out, h = net.lstm(inputs, h)
-        # get the character probabilities
-        #print(out[0][0][0].item())
-        #print(len(out[0][0]))
-        p = torch.nn.functional.softmax(out, dim=2).data
-        if(train_on_gpu):
-            p = p.cpu() # move to cpu
-        print(p)
-        print(p.topk(512))
-        # get top characters
-        pe = p.topk(512)
-        p, top_ch = p.topk(top_k)
-        top_ch = top_ch.numpy().squeeze()
-        # select the likely next character with some element of randomness
-        #print(p[0][0][0].item())
-        p = p.numpy().squeeze()#numpy()#.squeeze()
-        #print(top_ch, p)
-        char = np.random.choice(top_ch)
-        # return the encoded value of the predicted char and the hidden state
-        #print(char)
-        return int2char[char], h
-
-    #for x in char2id:
-        #print(x)
-
-    if(train_on_gpu):
-        model.cuda()
-    else:
-        model.cpu()
-    model.eval()
-
-    # First off, run through the prime characters
-    # First off, run through the prime characters
-    chars = [ch for ch in startSentence]
-    h = init_hidden(model, 1)
-    for ch in startSentence:
-        char, h = predict(model, ch, h, top_k=2)
-    chars.append(char)
-    
-    # Now pass in the previous character and get a new one
-    for ii in range(1000):
-        char, h = predict(model, chars[-1], h,top_k=2)
-        chars.append(char)
-        print (char)
-    return ''.join(chars)
-
     #### Край на Вашия код
     #############################################################################
-    return chars
+
+    return result

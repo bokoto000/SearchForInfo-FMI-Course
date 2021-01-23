@@ -43,8 +43,6 @@ class LSTMLanguageModelPack(torch.nn.Module):
         self.endTokenIdx = word2ind[endToken]
         self.hidden_size = hidden_size
         self.lstm_layer = lstm_layers
-        print(embed_size)
-        print(word2ind)
         self.lstm        = torch.nn.LSTM(embed_size, hidden_size, lstm_layers, dropout = dropout)
         self.embed       = torch.nn.Embedding(len(word2ind), embed_size)
         self.projection  = torch.nn.Linear(hidden_size, len(word2ind))
@@ -57,6 +55,8 @@ class LSTMLanguageModelPack(torch.nn.Module):
         X = self.preparePaddedBatch(source)
         E = self.embed(X[:-1])
         source_lengths = [len(s)-1 for s in source]
+        print(E)
+        print(source_lengths)
         outputPacked, _ = self.lstm(torch.nn.utils.rnn.pack_padded_sequence(E, source_lengths,enforce_sorted=False))
         output,_ = torch.nn.utils.rnn.pad_packed_sequence(outputPacked)
 
