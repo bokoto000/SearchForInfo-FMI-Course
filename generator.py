@@ -25,21 +25,24 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
             tensor[c] = char2id[string[c]]
             return tensor
 
-    def predict(model, source):
+    def predict(model, source, h=None):
         
         length = len(source)-1
         X = model.preparePaddedBatch(source)
-        #print(X)
+        #   print(X)
         E = model.embed(X)
         source_lengths = [len(s) for s in source]
-        #print(E)
+       # print(E)
         #print(source_lengths)
-        outputPacked, _ = model.lstm(torch.nn.utils.rnn.pack_padded_sequence(E, source_lengths,enforce_sorted=False))
+        if h!=None:
+            outputPacked, h = model.lstm(torch.nn.utils.rnn.pack_padded_sequence(E, source_lengths,enforce_sorted=False), h)
+        else:
+            outputPacked, h = model.lstm(torch.nn.utils.rnn.pack_padded_sequence(E, source_lengths,enforce_sorted=False))
         output,_ = torch.nn.utils.rnn.pad_packed_sequence(outputPacked)
 
         Z = model.projection(output.flatten(0,1))
         #print(Z)
-        Z = torch.div(Z,0.4)
+        Z = torch.div(Z,0.2)
         #print(Z)
         p = torch.nn.functional.softmax(Z, dim=1).data
         #print(p)
@@ -60,15 +63,20 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         #print(Z.size(), Z)
        #Y_bar[Y_bar==model.endTokenIdx] = model.padTokenIdx
         #H = torch.nn.functional.cross_entropy(Z,Y_bar,ignore_index=model.padTokenIdx)
-        return int2char[char]
+        return int2char[char],h 
     #print(char2id)
-    result = startSentence
-    chars  = [x for x in startSentence]
+    startSentence+=" "
+    result = startSentence[1:]
+    startSentenceLen = len(result)
+    chars  = [x for x in result]
+    out, h = predict(model,chars)
+    #print(h)
+    chars.append(out)
     model.eval() # eval mode
-    for x in range(0,20):
-        out = predict(model, chars[-2:])
+    for x in range(0,300):
+        out, h = predict(model, chars[-startSentenceLen:],h)
         chars.append(out)
-    print("".join(chars))
+    return "".join(chars)
     
     #############################################################################
     ###  Тук следва да се имплементира генерацията на текста

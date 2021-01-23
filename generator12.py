@@ -110,6 +110,13 @@ def generateText(model, char2id, startSentence, limit=1000, temperature=1.):
         #print(char)
         return int2char[char], h
 
+    def init_state(model, device, batch_size=1):
+            """
+            initialises rnn states.
+            """
+            return (torch.zeros(model.lstm_layer, batch_size, model.hidden_size).to(device),
+                    torch.zeros(model.lstm_layer, batch_size, model.hidden_size).to(device))
+
     #for x in char2id:
         #print(x)
 
